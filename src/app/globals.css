@@ -49,6 +49,18 @@
   background: var(--surface);
 }
 
+.app-title {
+  font: 650 clamp(1rem, 2vw, 1.25rem)/1.2 var(--font-display);
+  letter-spacing: -.025em;
+  white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+  .risk-header { padding-inline: 8px; }
+  .risk-header > div { gap: 5px; }
+  .risk-header .var-banner { height: 24px; }
+}
+
 .var-banner {
   display: block;
   width: auto;

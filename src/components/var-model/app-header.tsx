@@ -20,7 +20,8 @@ export function AppHeader() {
           </filter>
         </svg>
         <img className="var-banner" src={assetPath + 'logos/shore-wash-banner.png'}
-          width="692" height="245" alt="Shore Wash" />
+          width="692" height="245" alt="" />
+        <span className="app-title">Risk Lab</span>
       </div>
       <div className="flex items-center gap-3">
         <select className="rounded-md border border-input bg-card px-2 py-2 text-sm" data-oc-theme aria-label="Appearance">
