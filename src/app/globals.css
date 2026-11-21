@@ -49,10 +49,13 @@
   background: var(--surface);
 }
 
-.var-brand { display: inline-grid; align-items: center; }
-.var-brand img { height: 40px; width: auto; }
-.var-logo-dark, [data-theme='dark'] .var-logo-light { display: none; }
-[data-theme='dark'] .var-logo-dark { display: block; }
+.var-banner {
+  display: block;
+  width: auto;
+  height: clamp(30px, 4vw, 40px);
+}
+
+[data-theme='dark'] .var-banner { filter: url(#shore-wash-night); }
 
 @media (min-width: 768px) {
   .risk-sidebar { top: 64px; height: calc(100svh - 64px); }
