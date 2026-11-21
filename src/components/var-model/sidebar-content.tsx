@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  SidebarHeader,
   SidebarContent as SidebarScrollableContent,
   SidebarGroup,
   SidebarGroupLabel,
@@ -27,12 +26,11 @@ type SidebarContentProps = {
 export function SidebarContent(props: SidebarContentProps) {
   return (
     <>
-      <SidebarHeader></SidebarHeader>
       <SidebarScrollableContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Simulation Settings</SidebarGroupLabel>
+          <SidebarGroupLabel>Portfolio controls</SidebarGroupLabel>
           <div className="space-y-4 p-2">
-            <h4 className="font-medium">Calculation Method</h4>
+            <h4 className="font-medium">Calculation method</h4>
             <RadioGroup
               value={props.simulationMethod}
               onValueChange={props.setSimulationMethod}
