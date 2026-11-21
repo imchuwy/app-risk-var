@@ -1,18 +1,13 @@
-# VarModel - Value at Risk (VaR) Calculator
+# OC AI Risk Lab
 
-A professional financial risk management tool built with Next.js, Genkit, and ShadCN UI.
+An interactive portfolio demo for one-day value at risk (VaR) at 95% confidence. Compare parametric and historical estimates, change the sample portfolio, and read an explanation of the results in the browser.
 
-## Features
-- Dynamic portfolio management from local CSV.
-- Value at Risk (VaR) calculations using Parametric and Historical methods.
-- Interactive normal distribution charts.
-- AI-powered results explanation.
+The USD positions and returns are simulated. No live market feed, API key, or server is needed for the exported app.
 
-## Repository
-[View on GitHub](https://github.com/imchuwy/VaRApp.git)
+## Run locally
 
-## Getting Started
-1. Clone the repository: `git clone https://github.com/imchuwy/VaRApp.git`
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env` (add `GOOGLE_GENAI_API_KEY`).
-4. Run the development server: `npm run dev`
+- Install the locked dependencies with npm ci.
+- Run npm run dev and open the address printed in the terminal.
+- Run npm run build to export a static site to out/. Set NEXT_PUBLIC_BASE_PATH to /app-var when building for the GitHub Pages project URL.
+
+The OC AI design kit supplies the visual tokens, wordmarks and fonts. Font licenses are under public/oc/assets/fonts/licenses.

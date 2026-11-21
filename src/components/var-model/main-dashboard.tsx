@@ -21,8 +21,11 @@ export function MainDashboard({
   removeInstrument,
 }: MainDashboardProps) {
   return (
-    <main className="flex-1 p-4 sm:p-6">
-      <div className="grid grid-cols-1 gap-6">
+    <main className="min-w-0 flex-1 p-4 sm:p-6">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6">
+        <p className="text-sm text-muted-foreground">
+          Explore one-day portfolio risk using fictional instruments and simulated data.
+        </p>
         <div className="col-span-1">
           <DistributionChart varResults={varResults} />
         </div>

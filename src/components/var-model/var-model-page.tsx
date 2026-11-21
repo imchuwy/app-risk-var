@@ -1,52 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppHeader } from './app-header';
 import { MainDashboard } from './main-dashboard';
 import { SidebarContent } from './sidebar-content';
 import { calculateVaR } from '@/lib/var-calculator';
-import { getHistoricalData, getAvailableSymbols } from '@/lib/financial-data';
-import type { Instrument, VaRResult } from '@/lib/types';
+import { availableSymbols, getDemoReturns } from '@/lib/demo-returns';
+import type { Instrument } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-
-// This is a wrapper to call server-side getHistoricalData from the client
-async function getHistoricalDataOnClient(instruments: Instrument[]) {
-  const data = await getHistoricalData(instruments);
-  // The Map object is not directly serializable, so we convert it to an array of arrays
-  return Array.from(data.entries());
-}
-
-async function getAvailableSymbolsOnClient() {
-  return getAvailableSymbols();
-}
 
 export default function VarModelPage() {
   const { toast } = useToast();
-  // State for Simulation & Portfolio
   const [simulationMethod, setSimulationMethod] = useState('parametric');
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
-  const [varResults, setVarResults] = useState<VaRResult | null>(null);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [availableSymbols, setAvailableSymbols] = useState<string[]>([]);
-
-  // Fetch available symbols on mount
-  useEffect(() => {
-    async function fetchSymbols() {
-      try {
-        const symbols = await getAvailableSymbolsOnClient();
-        setAvailableSymbols(symbols);
-      } catch (error) {
-        console.error('Failed to fetch available symbols', error);
-        toast({
-          title: 'Error',
-          description: 'Could not fetch instrument symbols from the server.',
-          variant: 'destructive',
-        });
-      }
-    }
-    fetchSymbols();
-  }, [toast]);
+  const [instruments, setInstruments] = useState<Instrument[]>([
+    { id: 'demo-equity', symbol: 'DEMO-EQUITY', position: 60000, included: true },
+    { id: 'demo-bond', symbol: 'DEMO-BOND', position: 40000, included: true },
+  ]);
 
   // Handle instrument management
   const addInstrument = (instrument: Omit<Instrument, 'id' | 'included'>) => {
@@ -78,43 +48,12 @@ export default function VarModelPage() {
     );
   };
 
-  // Memoized callback for VaR calculation
-  const runCalculation = useCallback(async () => {
-    setIsCalculating(true);
-    try {
-      const activeInstruments = instruments.filter(inst => inst.included);
-      if (activeInstruments.length === 0) {
-        setVarResults(null);
-        return;
-      }
-      
-      // We are now calling the server function from the client.
-      const historicalDataArray = await getHistoricalDataOnClient(activeInstruments);
-      // We convert the array back to a Map
-      const historicalData = new Map(historicalDataArray);
-
-      const results = calculateVaR(activeInstruments, historicalData, simulationMethod as 'parametric' | 'historical');
-      setVarResults(results);
-    } catch (error) {
-      console.error("Failed to calculate VaR", error);
-      toast({
-        title: 'Calculation Error',
-        description: 'Could not complete the VaR calculation. Check if the data file is present and correctly formatted.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsCalculating(false);
-    }
-  }, [instruments, simulationMethod, toast]);
-
-  // Effect to recalculate VaR when portfolio or method changes
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      runCalculation();
-    }, 500); // Debounce to avoid rapid recalculations
-
-    return () => clearTimeout(debounceTimer);
-  }, [runCalculation]);
+  const varResults = useMemo(() => {
+    const active = instruments.filter(instrument => instrument.included);
+    if (!active.length) return null;
+    const method = simulationMethod === 'historical' ? 'historical' : 'parametric';
+    return calculateVaR(active, getDemoReturns(active), method);
+  }, [instruments, simulationMethod]);
 
   return (
     <SidebarProvider>
@@ -134,7 +73,7 @@ export default function VarModelPage() {
           <SidebarInset>
             <MainDashboard
               varResults={varResults}
-              isCalculating={isCalculating}
+              isCalculating={false}
               instruments={instruments}
               toggleInstrument={toggleInstrument}
               removeInstrument={removeInstrument}

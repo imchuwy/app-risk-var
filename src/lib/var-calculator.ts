@@ -1,7 +1,6 @@
 import type { Instrument, VaRResult } from '@/lib/types';
 
 // Helper to sort numbers
-const sorter = (a: number, b: number) => a - b;
 
 /**
  * Calculates the standard deviation of a series of numbers.
@@ -37,10 +36,7 @@ export function calculateVaR(
   if (portfolioValue === 0 || instruments.length === 0) {
     return {
       absoluteVaR: 0,
-      relativeVaR: 0,
       varPercentageOfNAV: 0,
-      marginalVaR: 0,
-      componentVaR: 0,
       conditionalVaR: 0,
       portfolioValue: 0,
       portfolioStdDev: 0,
@@ -87,16 +83,11 @@ export function calculateVaR(
   
   const relativeVaR = absoluteVaR; // Simplified for demo
   const varPercentageOfNAV = (absoluteVaR / portfolioValue) * 100;
-  const marginalVaR = (absoluteVaR / instruments.length) * (1 + (Math.random() - 0.5) * 0.1);
-  const componentVaR = marginalVaR * instruments.length * (0.9 + Math.random() * 0.2);
 
 
   return {
     absoluteVaR,
-    relativeVaR,
     varPercentageOfNAV,
-    marginalVaR,
-    componentVaR,
     conditionalVaR,
     portfolioValue,
     portfolioStdDev,

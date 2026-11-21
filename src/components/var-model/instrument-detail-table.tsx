@@ -62,20 +62,15 @@ export function InstrumentDetailTable({
                 <TableHead>Symbol</TableHead>
                 <TableHead className="text-right">Position</TableHead>
                 <TableHead className="text-right">Weighting</TableHead>
-                <TableHead className="text-right">Component VaR</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {instruments.length > 0 ? (
-                instruments.map((inst, index) => {
+                instruments.map((inst) => {
                   const weighting =
                     portfolioValue > 0 ? (inst.position / portfolioValue) * 100 : 0;
                   
-                  // This is a mock calculation for component VaR per instrument
-                  const componentVaR = varResults?.componentVaR 
-                    ? (varResults.componentVaR / (instruments.filter(i => i.included).length || 1)) * (Math.random() * 0.4 + 0.8)
-                    : 0;
 
                   return (
                     <TableRow
@@ -96,14 +91,12 @@ export function InstrumentDetailTable({
                       <TableCell className="text-right">
                         {inst.included ? formatPercentage(weighting) : '0.00%'}
                       </TableCell>
-                      <TableCell className="text-right">
-                        {inst.included ? formatCurrency(componentVaR) : formatCurrency(0)}
-                      </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
+                          aria-label={"Remove " + inst.symbol}
                           onClick={() => removeInstrument(inst.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -114,7 +107,7 @@ export function InstrumentDetailTable({
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No instruments added.
                   </TableCell>
                 </TableRow>

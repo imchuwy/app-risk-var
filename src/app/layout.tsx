@@ -2,9 +2,12 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
+const publicPath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export const metadata: Metadata = {
-  title: 'VarModel',
-  description: 'Generate 3D variable models and calculate Value at Risk',
+  icons: publicPath + '/oc/assets/icons/favicon.svg',
+  title: 'Risk Lab | OC AI',
+  description: 'Explore one-day portfolio value at risk with simulated returns',
 };
 
 export default function RootLayout({
@@ -15,9 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script src={publicPath + '/oc/styles/oc-ai-theme.js'} />
       </head>
       <body className="font-body antialiased">
         {children}

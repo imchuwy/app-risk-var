@@ -7,10 +7,7 @@ export type Instrument = {
 
 export type VaRResult = {
   absoluteVaR: number;
-  relativeVaR: number;
   varPercentageOfNAV: number;
-  marginalVaR: number;
-  componentVaR: number;
   conditionalVaR: number;
   portfolioValue: number;
   portfolioStdDev: number;

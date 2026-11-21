@@ -74,7 +74,7 @@ export function DistributionChart({ varResults }: DistributionChartProps) {
   const chartConfig = {
     density: {
       label: 'Density',
-      color: 'hsl(var(--accent))',
+      color: 'var(--chart-3)',
     },
   };
 
@@ -126,7 +126,7 @@ export function DistributionChart({ varResults }: DistributionChartProps) {
               hide
             />
             <Tooltip
-              cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+              cursor={{ stroke: 'var(--action)', strokeWidth: 2 }}
               content={
                 <ChartTooltipContent
                   formatter={(value, name, props) => (

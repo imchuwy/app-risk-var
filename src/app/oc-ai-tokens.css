@@ -1,0 +1,192 @@
+/* OC AI Neutral application theme v1.2. Import before component styles. */
+:root {
+  --brand-plum: #35243f;
+  --brand-coral: #c94f43;
+  --brand-apricot: #f5ba83;
+  --font-display: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-feature: 16px;
+  --radius-pill: 999px;
+  --content-max: 1280px;
+  --dashboard-max: 1600px;
+  --duration-fast: 140ms;
+  --duration-panel: 200ms;
+  --duration-hero: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Light is the safe no-JS fallback. The initializer resolves System before paint. */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --canvas: #f7f7f5;
+  --brand-canvas: #f0f1ef;
+  --surface: #ffffff;
+  --surface-raised: #f0f1ef;
+  --text: #242628;
+  --text-muted: #555b61;
+  --border: #e1e3e1;
+  --control-border: #777e85;
+  --action: #b44439;
+  --action-hover: #a93d35;
+  --action-pressed: #91332d;
+  --on-action: #ffffff;
+  --link: #a93d35;
+  --selected: #f0f1ef;
+  --on-selected: #242628;
+  --accent: #f5ba83;
+  --on-accent: #35243f;
+  --focus: #242628;
+  --success: #24704d;
+  --warning: #8a5b00;
+  --danger: #a8283d;
+  --info: #245c8a;
+  --chart-1: #a93d35;
+  --chart-2: #242628;
+  --chart-3: #28736b;
+  --chart-4: #876010;
+  --chart-5: #69538a;
+  --chart-6: #406c91;
+  --shadow-card: 0 8px 24px rgb(53 36 63 / 0.05);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #121315;
+  --brand-canvas: #121315;
+  --surface: #1b1d20;
+  --surface-raised: #24272b;
+  --text: #f1f2f3;
+  --text-muted: #a9afb7;
+  --border: #34383d;
+  --control-border: #78818b;
+  --action: #ee9585;
+  --action-hover: #ffa28e;
+  --action-pressed: #e77d6b;
+  --on-action: #121315;
+  --link: #ffab9a;
+  --selected: #24272b;
+  --on-selected: #f1f2f3;
+  --accent: #f5ba83;
+  --on-accent: #35243f;
+  --focus: #f5ba83;
+  --success: #90d4ab;
+  --warning: #f5cd77;
+  --danger: #ff99a8;
+  --info: #99c8f1;
+  --chart-1: #ee9585;
+  --chart-2: #f5ba83;
+  --chart-3: #8ed2c4;
+  --chart-4: #e6cb81;
+  --chart-5: #bfa5dc;
+  --chart-6: #99c8f1;
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 0.15);
+}
+
+/* Opt-in primitives; component styles should consume these same semantic roles. */
+.oc-app {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+.oc-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+.oc-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+.oc-button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: 600 14px/1.4 var(--font-ui);
+  background: var(--action);
+  color: var(--on-action);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.oc-button:hover:not(:disabled) {
+  background: var(--action-hover);
+}
+.oc-button:active:not(:disabled) {
+  background: var(--action-pressed);
+}
+.oc-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.oc-button-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--control-border);
+}
+.oc-button-secondary:hover:not(:disabled) {
+  background: var(--surface-raised);
+}
+.oc-button-secondary:active:not(:disabled) {
+  background: var(--selected);
+}
+.oc-link {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.oc-input {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--control-border);
+  background: var(--surface);
+  color: var(--text);
+  font: 400 16px/1.5 var(--font-ui);
+}
+.oc-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+.oc-input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.oc-tabular {
+  font-variant-numeric: tabular-nums;
+}
+.oc-app :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-panel: 0ms;
+    --duration-hero: 0ms;
+  }
+  .oc-decorative-motion {
+    animation: none !important;
+    transform: none !important;
+  }
+  .oc-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .oc-app {
+    scroll-behavior: auto;
+  }
+}
