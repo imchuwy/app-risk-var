@@ -22,7 +22,7 @@ export function VarResultsDisplay({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Value at Risk (VaR) Results</CardTitle>
+        <CardTitle>Portfolio risk</CardTitle>
         <CardDescription>
           One observation interval at 95% confidence.
           {result && ` ${result.sampleSize} matched intervals, ${result.firstDate} to ${result.lastDate}.`}
@@ -44,14 +44,14 @@ export function VarResultsDisplay({
           <>
             <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
-                ['Portfolio value', currency(result.portfolioValue)],
                 ['VaR (95%)', currency(result.absoluteVaR)],
+                ['Portfolio value', currency(result.portfolioValue)],
                 ['VaR % of NAV', result.varPercentageOfNAV.toFixed(2) + '%'],
                 ['Expected shortfall (95%)', currency(result.conditionalVaR)],
               ].map(([label, value]) => (
-                <div key={label} className="min-w-0 rounded-lg border bg-background p-3">
+                <div key={label} className="min-w-0 rounded-lg border bg-background p-3 first:border-primary first:bg-card">
                   <dt className="text-sm text-muted-foreground">{label}</dt>
-                  <dd className="break-words text-lg font-semibold tabular-nums text-primary">{value}</dd>
+                  <dd className="break-words text-xl font-semibold tabular-nums text-foreground">{value}</dd>
                 </div>
               ))}
             </dl>

@@ -25,11 +25,14 @@ export function MainDashboard({
   removeInstrument,
 }: MainDashboardProps) {
   return (
-    <main className="min-w-0 flex-1 p-4 sm:p-6">
+    <main className="min-w-0 flex-1 p-4 sm:p-8">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6">
-        <p className="text-sm text-muted-foreground">
+        <header className="space-y-2">
+          <h1 className="font-headline text-4xl font-semibold tracking-tight">Risk Lab</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
           Compare historical and parametric risk using an archived snapshot of instrument mid-prices. Positions are hypothetical USD exposures.
-        </p>
+          </p>
+        </header>
         <div className="col-span-1">
           <VarResultsDisplay
             varResults={varResults}

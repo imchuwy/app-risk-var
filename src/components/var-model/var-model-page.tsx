@@ -90,7 +90,7 @@ export default function VarModelPage() {
       <div className="flex min-h-screen w-full flex-col">
         <AppHeader />
         <div className="flex flex-1">
-          <Sidebar collapsible="icon" className="border-r">
+          <Sidebar collapsible="offcanvas" className="risk-sidebar border-r">
             <SidebarContent
               simulationMethod={simulationMethod}
               setSimulationMethod={setSimulationMethod}
@@ -100,7 +100,7 @@ export default function VarModelPage() {
               availableSymbols={availableSymbols}
             />
           </Sidebar>
-          <SidebarInset>
+          <SidebarInset className="min-w-0 bg-background">
             <MainDashboard
               varResults={varResults}
               isCalculating={!prices && !loadError}

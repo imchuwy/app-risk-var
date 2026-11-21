@@ -4,12 +4,15 @@
   const key = 'oc-ai-theme';
   const allowed = new Set(['system', 'light', 'dark']);
   const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const favicon = document.querySelector('link[rel~="icon"][data-dark-href]');
+  const lightIcon = favicon?.getAttribute('href');
   let preference = 'system';
   try { const saved = localStorage.getItem(key); if (allowed.has(saved)) preference = saved; } catch {}
   function apply() {
     const resolved = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
     document.documentElement.dataset.theme = resolved;
     document.documentElement.style.colorScheme = resolved;
+    if (favicon) favicon.setAttribute('href', resolved === 'dark' ? favicon.dataset.darkHref : lightIcon);
     window.dispatchEvent(new CustomEvent('oc-ai-theme-change', { detail: { preference, resolved } }));
   }
   window.OCAITheme = {
