@@ -7,7 +7,7 @@ const publicPath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 export const metadata: Metadata = {
   icons: publicPath + '/oc/assets/icons/favicon.svg',
   title: 'Risk Lab | OC AI',
-  description: 'Explore one-day portfolio value at risk with simulated returns',
+  description: 'Explore one-day portfolio value at risk using an archived instrument-price snapshot',
 };
 
 export default function RootLayout({

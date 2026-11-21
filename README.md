@@ -1,8 +1,8 @@
 # OC AI Risk Lab
 
-An interactive portfolio demo for one-day value at risk (VaR) at 95% confidence. Compare parametric and historical estimates, change the sample portfolio, and read an explanation of the results in the browser.
+An interactive portfolio demo for value at risk per matched observation interval (VaR) at 95% confidence. Compare parametric and historical estimates, change the sample portfolio, and read an explanation of the results in the browser.
 
-The USD positions and returns are simulated. No live market feed, API key, or server is needed for the exported app.
+The USD positions are hypothetical. The app calculates returns from the original archived instrument mid-prices. The exported app runs without a server or API key. See the [methodology](docs/risk-methodology.md) and [reproducible notebook](docs/varprices.ipynb).
 
 ## Run locally
 

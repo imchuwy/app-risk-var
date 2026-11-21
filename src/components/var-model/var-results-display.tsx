@@ -1,122 +1,85 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { AlertCircle, Info } from 'lucide-react';
 import type { VaRResult } from '@/lib/types';
 
 type VarResultsDisplayProps = {
   varResults: VaRResult | null;
   isCalculating: boolean;
+  loadError: boolean;
+  retryPrices: () => void;
+  hasPositions: boolean;
 };
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-
-const formatPercentage = (value: number) =>
-  `${value.toFixed(2)}%`;
+const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const currency = (value: number) => dollars.format(value);
 
 export function VarResultsDisplay({
-  varResults,
-  isCalculating,
+  varResults, isCalculating, loadError, retryPrices, hasPositions,
 }: VarResultsDisplayProps) {
-  const hasResults = varResults && varResults.portfolioValue > 0;
-
-  const metrics = [
-    { label: 'Portfolio Value', value: varResults?.portfolioValue, formatter: formatCurrency },
-    { label: 'Absolute VaR (95%)', value: varResults?.absoluteVaR, formatter: formatCurrency },
-    { label: 'VaR % of NAV', value: varResults?.varPercentageOfNAV, formatter: formatPercentage },
-    { label: 'Conditional VaR (95%)', value: varResults?.conditionalVaR, formatter: formatCurrency },
-  ];
-
+  const result = varResults;
   return (
     <Card>
-      <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <CardTitle>Value at Risk (VaR) Results</CardTitle>
-          <CardDescription>
-            One-day risk at 95% confidence, using simulated returns.
-          </CardDescription>
-        </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              disabled={isCalculating || !hasResults}
-            >
-              <Info className="mr-2 h-4 w-4" />
-              Explain Results
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[625px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                Reading the risk estimate
-              </DialogTitle>
-              <DialogDescription>
-                Estimates use fictional instruments and simulated data.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
-              {hasResults && (
-                <p>
-                  The model estimates a one-day loss of {formatCurrency(varResults.absoluteVaR)} or more
-                  in roughly 5% of scenarios. Conditional VaR estimates the average loss in that tail
-                  at {formatCurrency(varResults.conditionalVaR)}.
-                </p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+      <CardHeader>
+        <CardTitle>Value at Risk (VaR) Results</CardTitle>
+        <CardDescription>
+          One observation interval at 95% confidence.
+          {result && ` ${result.sampleSize} matched intervals, ${result.firstDate} to ${result.lastDate}.`}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        {!hasResults ? (
-          <div className="flex min-h-[120px] items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 p-6 text-center">
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <AlertCircle className="h-8 w-8" />
-              <p className="font-medium">No results to display</p>
-              <p className="text-sm">
-                Add instruments to your portfolio to calculate VaR.
-              </p>
-            </div>
+      <CardContent className="space-y-5">
+        {loadError ? (
+          <div className="flex flex-wrap items-center gap-3" role="alert">
+            <p>The archived pricing file could not be loaded.</p>
+            <Button type="button" variant="outline" onClick={retryPrices}>Retry</Button>
           </div>
+        ) : !result ? (
+          <p className="text-sm text-muted-foreground" role="status">
+            {isCalculating ? 'Loading archived prices...' : hasPositions
+              ? 'The selected instruments have fewer than two matching price intervals. Try removing an instrument.'
+              : 'Include instruments in your portfolio to calculate VaR.'}
+          </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {metrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-lg border bg-card p-4 text-center shadow-sm"
-              >
-                <p className="text-sm text-muted-foreground">{metric.label}</p>
-                {isCalculating ? (
-                  <Skeleton className="mx-auto mt-1 h-7 w-2/3" />
-                ) : (
-                  <p className="text-2xl font-bold text-primary">
-                    {metric.value !== undefined ? metric.formatter(metric.value) : '-'}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+          <>
+            <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {[
+                ['Portfolio value', currency(result.portfolioValue)],
+                ['VaR (95%)', currency(result.absoluteVaR)],
+                ['VaR % of NAV', result.varPercentageOfNAV.toFixed(2) + '%'],
+                ['Expected shortfall (95%)', currency(result.conditionalVaR)],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0 rounded-lg border bg-background p-3">
+                  <dt className="text-sm text-muted-foreground">{label}</dt>
+                  <dd className="break-words text-lg font-semibold tabular-nums text-primary">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <details className="rounded-lg border p-4 text-sm">
+              <summary className="cursor-pointer font-semibold">Show calculation workings</summary>
+              <ol className="mt-3 list-decimal space-y-2 pl-5">
+                <li>Compute each instrument return as (ending mid-price / starting mid-price) − 1.</li>
+                <li>Keep intervals with identical start and end dates for every included instrument. Multiply each return by its USD position and sum to get portfolio P/L.</li>
+                <li>
+                  {result.method === 'parametric'
+                    ? `Set the model mean to zero. The sample standard deviation of portfolio P/L is ${currency(result.portfolioStdDev)}. Multiply by 1.644854 for VaR or 2.062713 for expected shortfall.`
+                    : `Sort portfolio losses. Interpolate at the 95th percentile for VaR and average the worst ${result.tailCount.toFixed(2)} observations for expected shortfall, including a proportional share of the boundary observation.`}
+                </li>
+              </ol>
+              <p className="mt-3 text-muted-foreground">Observed mean portfolio P/L {currency(result.averagePnl)}.</p>
+              <table className="mt-3 w-full text-left tabular-nums">
+                <caption className="mb-2 text-left font-medium">Worst observed intervals</caption>
+                <thead><tr><th scope="col">Start</th><th scope="col">End</th><th scope="col" className="text-right">Portfolio P/L</th></tr></thead>
+                <tbody>
+                  {result.worstScenarios.map(({ from, to, pnl }) => (
+                    <tr key={from + to} className="border-t">
+                      <td className="py-1">{from}</td><td>{to}</td><td className="text-right">{currency(pnl)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+          </>
         )}
       </CardContent>
     </Card>

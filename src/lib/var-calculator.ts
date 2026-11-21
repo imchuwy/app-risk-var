@@ -1,95 +1,71 @@
-import type { Instrument, VaRResult } from '@/lib/types';
+import type { PriceHistory } from './financial-data';
+import type { Instrument, VaRMethod, VaRResult } from './types';
 
-// Helper to sort numbers
+const tailProbability = 0.05;
+const normalQuantile = 1.6448536269514722;
+const normalTailMean = Math.exp(-(normalQuantile ** 2) / 2) /
+  (Math.sqrt(2 * Math.PI) * tailProbability);
 
-/**
- * Calculates the standard deviation of a series of numbers.
- * @param numbers Array of numbers.
- * @returns The standard deviation.
- */
-function standardDeviation(numbers: number[]): number {
-  const n = numbers.length;
-  if (n === 0) return 0;
-  const mean = numbers.reduce((a, b) => a + b) / n;
-  const variance = numbers.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n;
-  return Math.sqrt(variance);
-}
-
-
-/**
- * Calculates Value at Risk (VaR) and related metrics for a portfolio.
- * @param instruments The list of instruments in the portfolio.
- * @param dailyReturnsData A map of instrument symbols to their historical daily returns.
- * @param method The calculation method ('parametric' or 'historical').
- * @returns The VaR results.
- */
 export function calculateVaR(
   instruments: Instrument[],
-  dailyReturnsData: Map<string, number[]>,
-  method: 'parametric' | 'historical'
-): VaRResult {
-  const portfolioValue = instruments.reduce(
-    (sum, inst) => sum + inst.position,
-    0
-  );
+  prices: PriceHistory,
+  method: VaRMethod,
+): VaRResult | null {
+  const portfolioValue = instruments.reduce((sum, { position }) => sum + position, 0);
+  if (!Number.isFinite(portfolioValue) || portfolioValue <= 0) return null;
 
-  if (portfolioValue === 0 || instruments.length === 0) {
-    return {
-      absoluteVaR: 0,
-      varPercentageOfNAV: 0,
-      conditionalVaR: 0,
-      portfolioValue: 0,
-      portfolioStdDev: 0,
-    };
-  }
-
-  // Calculate portfolio historical returns
-  const numDays = dailyReturnsData.values().next().value?.length || 0;
-  if (numDays === 0) return calculateVaR([], new Map(), method); // Return zeroed object
-
-  const portfolioDailyReturns: number[] = [];
-  for (let i = 0; i < numDays; i++) {
-    let portfolioDailyReturn = 0;
-    for (const instrument of instruments) {
-      const weight = instrument.position / portfolioValue;
-      const instrumentReturns = dailyReturnsData.get(instrument.symbol) || [];
-      portfolioDailyReturn += weight * (instrumentReturns[i] || 0);
+  // Each position contributes a return for the same start and end date.
+  const scenarios = new Map<string, { from: string; to: string; pnl: number; count: number }>();
+  for (const { symbol, position } of instruments) {
+    const history = prices.get(symbol);
+    if (!history) return null;
+    const observations = [...history].sort(([left], [right]) => left.localeCompare(right));
+    for (let index = 1; index < observations.length; index++) {
+      const [from, previous] = observations[index - 1];
+      const [to, current] = observations[index];
+      const key = from + '/' + to;
+      const scenario = scenarios.get(key) ?? { from, to, pnl: 0, count: 0 };
+      scenario.pnl += position * (current / previous - 1);
+      scenario.count++;
+      scenarios.set(key, scenario);
     }
-    portfolioDailyReturns.push(portfolioDailyReturn);
   }
 
-  let absoluteVaR = 0;
-  let conditionalVaR = 0;
-  const confidenceLevel = 0.95;
-  const portfolioStdDev = standardDeviation(portfolioDailyReturns) * Math.sqrt(1) * portfolioValue; // daily std dev in dollars
+  const aligned = [...scenarios.values()].filter(({ count }) => count === instruments.length);
+  const sampleSize = aligned.length;
+  if (sampleSize < 2) return null;
 
-  if (method === 'parametric') {
-    const zScore = 1.645; // For 95% confidence
-    absoluteVaR = portfolioStdDev * zScore;
-    
-    // CVaR for normal distribution is a known formula
-    const cvarZScore = 2.063; // For 95% confidence
-    conditionalVaR = portfolioStdDev * cvarZScore;
+  const averagePnl = aligned.reduce((sum, { pnl }) => sum + pnl, 0) / sampleSize;
+  const squaredDeviations = aligned.reduce((sum, { pnl }) => sum + (pnl - averagePnl) ** 2, 0);
+  const portfolioStdDev = Math.sqrt(squaredDeviations / (sampleSize - 1));
+  const sortedLosses = aligned.map(({ pnl }) => -pnl).sort((left, right) => right - left);
+  const rank = tailProbability * (sampleSize - 1);
+  const lowerIndex = Math.floor(rank);
+  const interpolation = rank - lowerIndex;
+  const historicalVaR = sortedLosses[lowerIndex] * (1 - interpolation) +
+    sortedLosses[lowerIndex + 1] * interpolation;
+  const tailCount = sampleSize * tailProbability;
+  const fullObservations = Math.floor(tailCount);
+  const historicalES = (
+    sortedLosses.slice(0, fullObservations).reduce((sum, loss) => sum + loss, 0) +
+    sortedLosses[fullObservations] * (tailCount - fullObservations)
+  ) / tailCount;
 
-  } else if (method === 'historical') {
-    const sortedReturns = [...portfolioDailyReturns].sort((a, b) => a - b);
-    const varIndex = Math.floor((1 - confidenceLevel) * sortedReturns.length);
-    absoluteVaR = -sortedReturns[varIndex] * portfolioValue;
-
-    const losses = sortedReturns.slice(0, varIndex + 1);
-    const avgLoss = losses.reduce((sum, loss) => sum + loss, 0) / losses.length;
-    conditionalVaR = -avgLoss * portfolioValue;
-  }
-  
-  const relativeVaR = absoluteVaR; // Simplified for demo
-  const varPercentageOfNAV = (absoluteVaR / portfolioValue) * 100;
-
+  const absoluteVaR = method === 'parametric' ? normalQuantile * portfolioStdDev : historicalVaR;
+  const conditionalVaR = method === 'parametric' ? normalTailMean * portfolioStdDev : historicalES;
 
   return {
+    method,
     absoluteVaR,
-    varPercentageOfNAV,
+    varPercentageOfNAV: (absoluteVaR / portfolioValue) * 100,
     conditionalVaR,
     portfolioValue,
     portfolioStdDev,
+    averagePnl,
+    sampleSize,
+    firstDate: aligned[0].from,
+    lastDate: aligned[sampleSize - 1].to,
+    tailCount,
+    worstScenarios: [...aligned].sort((left, right) => left.pnl - right.pnl).slice(0, 5),
   };
 }

@@ -82,7 +82,7 @@ export function DistributionChart({ varResults }: DistributionChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Distribution of Returns</CardTitle>
+          <CardTitle>Normal-model reference</CardTitle>
           <CardDescription>
             Add instruments to the portfolio to see the distribution.
           </CardDescription>
@@ -99,9 +99,9 @@ export function DistributionChart({ varResults }: DistributionChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Distribution of Returns</CardTitle>
+        <CardTitle>Normal-model reference</CardTitle>
         <CardDescription>
-          Interactive normal distribution showing standard deviations.
+          Zero-mean normal reference using the sample standard deviation of portfolio P/L. Historical estimates use the observed losses.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -135,7 +135,7 @@ export function DistributionChart({ varResults }: DistributionChartProps) {
                         {props.payload.sigma.toFixed(2)}σ from Mean
                       </div>
                       <div className="text-muted-foreground">
-                        Confidence: {props.payload.percentile.toFixed(1)}%
+                        Normal percentile: {props.payload.percentile.toFixed(1)}%
                       </div>
                       <div className="text-muted-foreground">
                         P/L: ${props.payload.pl.toLocaleString('en-US', { maximumFractionDigits: 0 })}

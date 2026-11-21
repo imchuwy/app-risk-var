@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppHeader } from './app-header';
 import { MainDashboard } from './main-dashboard';
 import { SidebarContent } from './sidebar-content';
 import { calculateVaR } from '@/lib/var-calculator';
-import { availableSymbols, getDemoReturns } from '@/lib/demo-returns';
+import { parsePriceHistory, type PriceHistory } from '@/lib/financial-data';
 import type { Instrument } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,9 +14,39 @@ export default function VarModelPage() {
   const { toast } = useToast();
   const [simulationMethod, setSimulationMethod] = useState('parametric');
   const [instruments, setInstruments] = useState<Instrument[]>([
-    { id: 'demo-equity', symbol: 'DEMO-EQUITY', position: 60000, included: true },
-    { id: 'demo-bond', symbol: 'DEMO-BOND', position: 40000, included: true },
+    { id: 'eurusd', symbol: 'EURUSD', position: 60000, included: true },
+    { id: 'usdjpy', symbol: 'USDJPY', position: 40000, included: true },
   ]);
+
+  const [prices, setPrices] = useState<PriceHistory | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const path = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/prices/instrument_data.csv';
+    fetch(path, { signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error('Pricing download failed.');
+        return response.text();
+      })
+      .then(parsePriceHistory)
+      .then(setPrices)
+      .catch(() => {
+        if (!controller.signal.aborted) setLoadError(true);
+      });
+    return () => controller.abort();
+  }, [loadAttempt]);
+
+  const availableSymbols = useMemo(() => prices ? [...prices]
+    .filter(([, observations]) => observations.size >= 3)
+    .map(([symbol]) => symbol)
+    .sort() : [], [prices]);
+
+  function retryPrices() {
+    setLoadError(false);
+    setLoadAttempt(attempt => attempt + 1);
+  }
 
   // Handle instrument management
   const addInstrument = (instrument: Omit<Instrument, 'id' | 'included'>) => {
@@ -50,10 +80,10 @@ export default function VarModelPage() {
 
   const varResults = useMemo(() => {
     const active = instruments.filter(instrument => instrument.included);
-    if (!active.length) return null;
+    if (!active.length || !prices) return null;
     const method = simulationMethod === 'historical' ? 'historical' : 'parametric';
-    return calculateVaR(active, getDemoReturns(active), method);
-  }, [instruments, simulationMethod]);
+    return calculateVaR(active, prices, method);
+  }, [instruments, simulationMethod, prices]);
 
   return (
     <SidebarProvider>
@@ -73,7 +103,9 @@ export default function VarModelPage() {
           <SidebarInset>
             <MainDashboard
               varResults={varResults}
-              isCalculating={false}
+              isCalculating={!prices && !loadError}
+              loadError={loadError}
+              retryPrices={retryPrices}
               instruments={instruments}
               toggleInstrument={toggleInstrument}
               removeInstrument={removeInstrument}
